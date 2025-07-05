@@ -1,21 +1,21 @@
 settings = {
     "maria": {
-        "host": "60.11.45.128",
+        "host": "",
         "port": 3306,
-        "user": "animp",
-        "password": "animp.890",
-        "database": "animp"
+        "user": "",
+        "password": "",
+        "database": ""
     },
     "sms": {
-        "host": "150.24.192.128",
+        "host": "",
         "port": 5060
     },
     "broker": {
-        "host": "90.90.30.118",
+        "host": "",
         "port": 50000
     },
     "server": {
-        "host": "150.24.192.128",
+        "host": "",
         "user": "API"
     }
 }
