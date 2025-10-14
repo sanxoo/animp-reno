@@ -1,0 +1,18 @@
+team_id = ["00001200", "00001300"]
+
+[maria]
+host = "192.168.105.36"
+port = 3306
+user = "animp"
+password = "1OBBAXuGjv57Xhfasf4GOQ=="
+database = "animp"
+
+[iris]
+master = "192.168.105.36:5050"
+user = "animp"
+password = "1OBBAXuGjv57Xhfasf4GOQ=="
+database = "animp"
+
+[ace]
+log = "/home/sanxoo/codes/animp-server/log"
+

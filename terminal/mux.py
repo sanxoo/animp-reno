@@ -2,118 +2,118 @@ import logging
 import time
 import threading
 
-import session
+from terminal import session
 
-class waiting_timeout(Exception): pass
+class WaitingTimeout(Exception): pass
 
-class mux(threading.Thread):
+class Mux(threading.Thread):
     def __init__(self, server):
         threading.Thread.__init__(self)
         self.server = server
         self.que = []
         self.session = None
+        self.loop = None
+
+    def start(self):
+        self.session = session.open(self.server.sys_info)
         self.loop = True
+        threading.Thread.start(self)
+
+    def stop(self):
+        self.loop = False
+        self.join()
 
     def run(self):
         try:
-            self.session = session.open(self.server.system_info)
             while self.loop:
                 if not self.que:
-                    self.session.clear()
+                    self.session.clean()
                 else:
                     self.pop()
         except:
             logging.exception("")
         finally:
-            if self.session: self.session.close()
-
-    def start(self):
-        threading.Thread.start(self)
-        while not self.session: time.sleep(1)
-
-    def stop(self):
-        self.loop = False
+            self.session.close()
 
     def prompt(self):
-        return self.session.prompt_line
+        return self.session.prompt
 
-    def push(self, client_id, text):
-        self.que.append((client_id, text))
+    def push(self, client_id, cod):
+        self.que.append((client_id, cod))
 
     def pop(self):
-        client_id, text = self.que.pop(0)
-        self.session.send(text)
-        self.server.send(client_id, "\nSTART\n\n")
-        self.server.hist(client_id, text)
+        client_id, cod = self.que.pop(0)
+        self.session.send(cod)
+        self.server.send(client_id, f"<BEGIN>{cod}</BEGIN>\n")
+        self.server.hist(client_id, cod)
         try:
-            while self.session.status != session.status.ready:
-                text = self.session.recv()
-                self.server.send(client_id, text)
-                if self.session.status == session.status.waiting:
+            while not self.session.is_ready():
+                pod = self.session.recv()
+                if pod: self.server.send(client_id, pod)
+                if self.session.is_waiting():
+                    self.server.send(client_id, "<PASSWORD/>\n")
                     self.wait(client_id)
-        except session.receive_timeout:
-            self.server.send(client_id, "\n\nRECEIVE TIMEOUT\n\n")
-            self.server.hist(client_id, text, 1)
-            self.session.clear()
-        except waiting_timeout:
-            self.server.send(client_id, "\n\nWAITING TIMEOUT\n\n")
-            self.session.clear()
-        self.server.send(client_id, "\nEND\n\n")
+        except session.ReceiveTimeout:
+            self.server.send(client_id, "RESPONSE TIMEOUT!\n")
+            self.server.hist(client_id, cod, "timeout")
+            self.session.clean()
+        except WaitingTimeout:
+            self.server.send(client_id, "TIMEOUT!\n")
+            self.session.clean()
+        self.server.send(client_id, f"<END>{cod}</END>\n")
         self.server.send(client_id, self.prompt())
 
     def wait(self, client_id):
         now = time.time()
         while time.time() < now + 10:
             time.sleep(1)
-            for i, text in self.que:
+            for i, pwd in reversed(self.que):
                 if i == client_id: break
             else:
                 continue
-            self.que.remove((i, text))
-            self.session.send(text)
+            self.que.remove((i, pwd))
+            self.session.send(pwd)
             break
         else:
-            raise waiting_timeout("")
+            raise WaitingTimeout("")
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG)
-    import sys
-    system_info = {
-        "type": "wcdma_ss_msc", "id": "msc",
-        "conn": [
-            {"host": "192.168.101.224", "port": 22, "user": "sanxoo", "pswd": "tjddms00))", "prpt": "\x1b[0m$ "},
-            {"host": "192.168.101.224", "port": 22, "user": "sanxoo", "pswd": "tjddms00))", "prpt": "\x1b[0m$ "},
-        ],
-        "port": 2000
-    }
+    import argparse
+    pars = argparse.ArgumentParser()
+    pars.add_argument("sys_name")
+    pars.add_argument("svc_type", choices=["terminal", "daycheck"], type=str.lower)
+    args = pars.parse_args()
 
-    class console:
+    logging.basicConfig(
+        format="%(asctime)s %(levelno)s %(filename)s:%(lineno)03d - %(message)s",
+        level=logging.DEBUG,
+    )
+
+    from terminal import db
+    class server:
         def __init__(self):
-            self.system_info = system_info
-            self.mux = None
+            self.sys_info = db.get_test_system_info()   #db.get_system_info(args.sys_name, args.svc_type)
         def send(self, i, text):
-            sys.stdout.write(text)
-            sys.stdout.flush()
-        def hist(self, i, text):
+            print(text, end="", flush=True)
+        def hist(self, i, cod, event="execute"):
             pass
         def run(self):
-            self.mux = mux(self)
+            self.mux = Mux(self)
             self.mux.start()
             self.send(1, "\nWELCOME, ENTER 'exit' TO QUIT.\n\n")
             self.send(1, self.mux.prompt())
             while 1:
                 try:
-                    text = input()
-                    if text.lower() == "exit":
+                    cod = input()
+                    if cod.lower() == "exit":
                         self.send(1, "\n")
                         break
-                    self.mux.push(1, text)
+                    self.mux.push(1, cod)
                 except:
                     self.send(1, "\n\n")
                     break
             self.mux.stop()
             self.mux.join()
-
-    console().run()
+    server().run()
 
