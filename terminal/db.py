@@ -9,8 +9,8 @@ def get_test_system_info():
         "sys_type": "test_dx_dev", "sys_name": "dxdev",
         "port": 20000,
         "seqs": {
-            "1": {"ip": "192.168.101.224", "port": 22, "id": "sanxoo", "pw": "tjddms00))", "prompt": "\x1b[0m$ "},
-            "2": {"ip": "192.168.101.224", "port": 22, "id": "sanxoo", "pw": "tjddms00))", "prompt": "\x1b[0m$ "},
+            "1": {"ip": "192.168.101.224", "port": 22, "id": "sanxoo", "pw": "tjddms00))", "prompt": "$ "},
+            "2": {"ip": "192.168.101.224", "port": 22, "id": "sanxoo", "pw": "tjddms00))", "prompt": "$ "},
         },
     }
 

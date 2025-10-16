@@ -3,8 +3,9 @@ import re
 
 def open(session):
     seq = session.sys_info["seqs"]["1"]
+    session.conn_seq = 1
     cmd = f"ssh {seq['id']}@{seq['ip']} -p {seq['port']}"
-    logging.info(f"1: {cmd}")
+    logging.debug(f"1: {cmd}")
     session.spawn(cmd)
     index = session.expect(["password: ", "(yes/no/[fingerprint])? "])
     if index == 1:
@@ -14,8 +15,9 @@ def open(session):
     session.expect(seq["prompt"])
 
     seq = session.sys_info["seqs"]["2"]
+    session.conn_seq = 2
     cmd = f"ssh {seq['id']}@{seq['ip']} -p {seq['port']}"
-    logging.info(f"2: {cmd}")
+    logging.debug(f"2: {cmd}")
     session.sendline(cmd)
     index = session.expect(["password: ", "(yes/no/[fingerprint])? "])
     if index == 1:

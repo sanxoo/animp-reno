@@ -14,9 +14,11 @@ class Status(enum.IntEnum):
     WAITING = 3
 
 class Session:
-    def __init__(self, sys_info, custom):
+    def __init__(self, sys_info, custom, test=False):
         self.sys_info = sys_info
         self.custom = custom
+        self.test = test
+        self.conn_seq = 1
         self.cli = None
         self.passwd_pattern = None
         self.prompt_pattern = None
@@ -29,7 +31,12 @@ class Session:
         self.cli = pexpect.spawn(command, encoding=encoding)
 
     def expect(self, patterns, timeout=10):
-        return self.cli.expect_exact(patterns, timeout=timeout)
+        try:
+            return self.cli.expect_exact(patterns, timeout=timeout)
+        except:
+            if self.test:
+                raise Exception(f"{self.conn_seq}|{str(patterns)}|{self.cli.before}")
+            raise
 
     def sendline(self, text):
         self.cli.sendline(text)
@@ -139,11 +146,11 @@ class Session:
 with open("terminal/session/__init__.toml", "rb") as toml:
     _custom_module = tomllib.load(toml)
 
-def open(sys_info):
+def open(sys_info, test=False):
     sys_type = sys_info["sys_type"].lower()
     if sys_type not in _custom_module: raise Exception(f"unkown system type: {sys_type}")
     _custom = importlib.import_module(f"terminal.session.{_custom_module[sys_type]}")
-    session = Session(sys_info, _custom)
+    session = Session(sys_info, _custom, test)
     session.open()
     return session
 
