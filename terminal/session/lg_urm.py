@@ -3,6 +3,7 @@ import re
 
 def open(session):
     seq = session.sys_info["seqs"]["1"]
+    session.conn_seq = 1
     if seq["port"] == "22":
         cmd = f"ssh {seq['id']}@{seq['ip']} -p {seq['port']}"
         logging.info(f"1: {cmd}")
@@ -22,6 +23,7 @@ def open(session):
     session.expect(seq["prompt"])
 
     seq = session.sys_info["seqs"]["2"]
+    session.conn_seq = 2
     cms = f"/opt/nortel/shell/wicl/wiclsh"
     logging.info(f"2: {cmd}")
     session.sendline(cmd)

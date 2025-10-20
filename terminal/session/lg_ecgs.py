@@ -3,6 +3,7 @@ import re
 
 def open(session):
     seq = session.sys_info["seqs"]["2"]
+    session.conn_seq = 1
     cmd = f"telnet {seq['ip']} {seq['port']}"
     logging.info(f"1: {cmd}")
     session.spawn(cmd)
