@@ -6,12 +6,12 @@ log = "/home/sanxoo/codes/animp-reno/log"
 host = "192.168.105.36"
 port = 3306
 user = "animp"
-password = "1OBBAXuGjv57Xhfasf4GOQ=="
+password = "gn64T/+uzkPQ2IoqiOVegA=="
 database = "animp"
 
 [iris]
 master = "192.168.105.36:5050"
 user = "animp"
-password = "1OBBAXuGjv57Xhfasf4GOQ=="
+password = "gn64T/+uzkPQ2IoqiOVegA=="
 database = "animp"
 
