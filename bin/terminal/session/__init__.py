@@ -14,7 +14,7 @@ class Status(enum.IntEnum):
     WAITING = 3
 
 class Session:
-    def __init__(self, sys_info, custom, test):
+    def __init__(self, sys_info, custom, test=False):
         self.sys_info = sys_info
         self.custom = custom
         self.test = test
@@ -143,14 +143,28 @@ class Session:
             self.close()
             self.open()
 
-with open("bin/terminal/session/__init__.toml", "rb") as toml:
-    _custom_module = tomllib.load(toml)
-
-def open(sys_info, test=False):
+def get_custom_module(sys_info):
+    with __builtins__["open"]("bin/terminal/session/__init__.toml", "rb") as toml:
+        custom_modules = tomllib.load(toml)
     sys_type = sys_info["sys_type"].lower()
-    if sys_type not in _custom_module: raise Exception(f"unkown system type: {sys_type}")
-    _custom = importlib.import_module(f"bin.terminal.session.{_custom_module[sys_type]}")
-    session = Session(sys_info, _custom, test)
+    if sys_type not in custom_modules: raise Exception(f"undefined system type: {sys_type}")
+    return importlib.import_module(f"bin.terminal.session.{custom_modules[sys_type]}")
+
+def open(sys_info):
+    custom_module = get_custom_module(sys_info)
+    session = Session(sys_info, custom_module)
     session.open()
     return session
+
+def test(sys_info):
+    custom_module = get_custom_module(sys_info)
+    session = Session(sys_info, custom_module, test=True)
+    seq, msg = "", ""
+    try:
+        session.open()
+    except Exception as e:
+        seq, msg = False, str(e).split(",", 1)
+    finally:
+        session.close()
+    return seq, msg
 

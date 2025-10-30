@@ -22,6 +22,7 @@ def murmur(func):
             logging.info(f"{args} {kwargs}")
             return func(*args, **kwargs)
         except HTTPException:
+            logging.exception("")
             raise
         except:
             logging.exception("")
@@ -37,8 +38,11 @@ app.add_middleware(
 @app.post("/api/test/connecting", status_code=200)
 @murmur
 def test_connecting(body: dict = Body(...)):
-    sys_name = body["systemName"]
-    sys_info = db.get_system_info(sys_name, "terminal")
+    try:
+        sys_name = body["systemName"]
+        sys_info = db.get_system_info(sys_name, "terminal")
+    except:
+        raise HTTPException(400, detail=[{"type": "internal_error", "msg": traceback.format_exc()}])
     res = {
         "systemName": sys_name, "list": [],
     }
@@ -49,10 +53,11 @@ def test_connecting(body: dict = Body(...)):
         })
         res["list"].append({**seq, "resultCode": 0, "resultMessage": ""})
     try:
-        session.open(sys_info, test=True).close()
-    except Exception as e:
-        seq, msg = str(e).split(",", 1)
-        res["list"][int(seq)-1].update({"resultCode": 1, "resultMessage": msg})
+        seq, msg = session.test(sys_info)
+        if seq:
+            res["list"][int(seq) - 1].update({"resultCode": 1, "resultMessage": msg})
+    except:
+        raise HTTPException(400, detail=[{"type": "internal_error", "msg": traceback.format_exc()}])
     return res
 
 if __name__ == "__main__":
