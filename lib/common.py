@@ -39,6 +39,7 @@ def set_logger(filename):
 
 def set_signal_stop(func):
     def stop(signum, frame):
+        logging.info(f"signal {signum}, stop")
         func()
-    signal.signal(signal.SIGINT, stop)
+    signal.signal(signal.SIGTERM, stop)
 
