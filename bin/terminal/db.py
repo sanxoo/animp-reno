@@ -7,7 +7,7 @@ from lib import cipher
 def get_system_info(sys_name, svc_type):
     if sys_name.lower() == "test":
         return {
-            "sys_type": "test_vw_xyz", "sys_name": sys_name, "port": 20000,
+            "sys_type": "test_uv_xyz", "sys_name": sys_name, "port": 20000,
             "seqs": {
                 "1": {"ip": "192.168.101.224", "port": 22, "id": "sanxoo", "pw": "tjddms00))", "prompt": "$ "},
                 "2": {"ip": "192.168.101.224", "port": 22, "id": "sanxoo", "pw": "tjddms00))", "prompt": "$ "},

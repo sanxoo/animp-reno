@@ -123,5 +123,5 @@ wcdma_ss_tan   = "ss_urm"
 wcdma_ss_urm   = "ss_urm"
 wcdma_tw_wglr  = "tw_vmss"
 
-test_vw_xyz    = "vw_xyz"
+test_uv_xyz    = "uv_xyz"
 
